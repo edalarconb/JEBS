@@ -1,4 +1,4 @@
-library("plot3D")
+library(plot3D)
 library(readxl)
 library(dplyr)
 library(rio)
@@ -9,6 +9,7 @@ library(lubridate)
 require(nnet)
 library(ggpubr)
 library(sampleSelection)
+library(rgl)
 
 dataObs=data.Ready %>% filter(GPA>0)
 mean.gpaP1=lm(GPA~matem,
@@ -164,7 +165,7 @@ legend("bottomleft",
        cex=0.8,bg = "transparent")
 
 ### A MORE INFORMATIVE ASSUMPTIONS
-### completo
+## generating full data
 mean.gpa=lm(PGA_1ERsemestre~matem,
             data=data.biol.mat)
 
@@ -206,13 +207,10 @@ data.full=data.frame(pje.mate=pje.mate[,1],
 
 data.full.obs=data.full
 
-### probabilidties
-
-## P(Z=1|X)
+### probabilities
 pz1=multinom(as.factor(Zsum)~matem,
              data=data.Ready)
 
-## P(G=g|X,Z=0)
 data.Z0=data.Ready %>% filter(Zsum==0)
 pS=multinom(as.factor(S)~matem,
             data=data.Z0)
@@ -257,13 +255,6 @@ data.bounds=data.frame(
                 EG3*pG.BIOQUÍMICA)*pz1+7*(1-pz1)
   )
 
-### LB UB UBAPSA UBw
-### B1 B2 B3 B4
-
-#a=data.frame(x=data.bounds$matem,unc1=(data.bounds$UB1-data.bounds$LB1))
-#b=data.frame(x=data.bounds$matem,unc1=(data.bounds$UB3-data.bounds$LB1))
-#c=data.frame(x=data.bounds$matem,unc1=(data.bounds$UB3-data.bounds$LB2))
-#install.packages("sampleSelection")
 
 
 pcH=data.biol.mat$nom_carrera
@@ -630,7 +621,6 @@ LBmin=matrix(LBminNM,
              nrow = grid.lines, ncol = grid.lines)
 
 ####### PSA
-library(rgl)
 par(mar = c(5, 4, 4, 2) - 1)
 scatter3D(dataObs$matem, dataObs$`leng y Com`, dataObs$GPA,
           pch = 19, cex = 0.5,colvar = NULL, col="black",
@@ -723,7 +713,7 @@ legend("bottomleft",
        cex=0.8,bg = "transparent")
 
 
-### HECKMAN
+### HECKMAN AND IGNORABILITY
 d2=data.Ready %>% mutate(status=
                            case_when(Z.biol==1 ~ "Biology",
                                      Z.biolM==1 ~ "Marin Biology",
